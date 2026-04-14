@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Machines">
+<title>Catalogue Machines</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #e8d44d;
+    --accent2: #4da8e8;
+    --text: #e8e8e4;
+    --muted: #888880;
+    --danger: #e86b4d;
+    --green: #4de89a;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 6px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-back {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .header-title {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* HOME SCREEN */
+  .home-hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 16px 20px;
+  }
+
+  .home-logo {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .home-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .home-title span { color: var(--accent); }
+
+  .home-desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  /* MACHINE CARDS */
+  .machines-grid {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .machine-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .machine-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+
+  .machine-card:active { background: var(--surface2); }
+
+  .machine-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .machine-name {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .machine-brand {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .machine-arrow {
+    color: var(--accent);
+    font-size: 18px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .machine-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .machine-stat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .machine-stat strong {
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  /* ADD MACHINE */
+  .add-machine-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 14px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .add-machine-btn:active { color: var(--accent); border-color: var(--accent); }
+
+  /* MACHINE DETAIL */
+  .search-bar-wrap {
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-bar {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+  }
+
+  .search-bar:focus { border-color: var(--accent); }
+  .search-bar::placeholder { color: var(--muted); }
+
+  /* SECTIONS LIST */
+  .sections-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: calc(16px + var(--safe-bottom));
+  }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .section-card-header {
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-card-header:active { background: var(--surface2); }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(232,212,77,0.1);
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .section-name { font-size: 14px; font-weight: 500; flex: 1; }
+
+  .section-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .section-chevron { color: var(--muted); font-size: 12px; }
+
+  /* SECTION DETAIL */
+  .section-detail-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(16px + var(--safe-bottom));
+  }
+
+  .plan-image-wrap {
+    background: #fff;
+    padding: 12px;
+    margin: 12px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    touch-action: pinch-zoom;
+    position: relative;
+  }
+
+  .plan-placeholder {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 12px;
+    border: 1px dashed var(--border);
+  }
+
+  .plan-placeholder .plan-icon { font-size: 32px; opacity: 0.4; }
+
+  .plan-note {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-align: center;
+    padding: 0 16px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* PARTS TABLE */
+  .parts-table-wrap {
+    margin: 0 12px 12px;
+  }
+
+  .parts-table-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+
+  .parts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .parts-table thead {
+    background: var(--surface2);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .parts-table th {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .parts-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(46,46,46,0.5);
+    vertical-align: top;
+  }
+
+  .parts-table tr:last-child td { border-bottom: none; }
+
+  .parts-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  .part-ref {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+  }
+
+  .part-pos {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .part-note {
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* SEARCH HIGHLIGHT */
+  .highlight { background: rgba(232,212,77,0.25); color: var(--accent); border-radius: 2px; }
+
+  .no-results {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 32px 16px;
+    font-family: var(--mono);
+  }
+
+  /* INFO BANNER */
+  .info-banner {
+    background: rgba(77,168,232,0.08);
+    border: 1px solid rgba(77,168,232,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin: 12px;
+    font-size: 12px;
+    color: var(--accent2);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: flex-end;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px calc(24px + var(--safe-bottom));
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .modal-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    width: 100%;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  .modal-input:focus { border-color: var(--accent); }
+
+  .modal-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .btn {
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    flex: 1;
+  }
+
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* TAG */
+  .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  .tag-blue { background: rgba(77,168,232,0.15); color: var(--accent2); }
+
+  /* Zoom pinch support */
+  img.zoomable { width: 100%; height: auto; touch-action: pinch-zoom; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN: HOME -->
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <div class="home-logo">● Catalogue pièces détachées</div>
+    <div class="home-title">Mes <span>Machines</span></div>
+    <div class="home-desc">Sélectionne une machine pour accéder aux plans et pièces</div>
+  </div>
+  <div class="machines-grid" id="machines-list">
+    <!-- machines injected here -->
+    <button class="add-machine-btn" onclick="openAddModal()">
+      <span style="font-size:18px">+</span> Ajouter une machine
+    </button>
+  </div>
+</div>
+
+<!-- SCREEN: MACHINE DETAIL -->
+<div class="screen" id="screen-machine">
+  <div class="header">
+    <button class="header-back" onclick="goHome()">← Accueil</button>
+    <div>
+      <div class="header-title" id="machine-title">—</div>
+      <div class="header-sub" id="machine-sub">—</div>
+    </div>
+  </div>
+  <div class="search-bar-wrap">
+    <input class="search-bar" type="search" placeholder="Rechercher une pièce ou un sous-ensemble…" id="search-input" oninput="filterSections()">
+  </div>
+  <div class="sections-list" id="sections-list"></div>
+</div>
+
+<!-- SCREEN: SECTION DETAIL -->
+<div class="screen" id="screen-section">
+  <div class="header">
+    <button class="header-back" onclick="goMachine()">← Retour</button>
+    <div>
+      <div class="header-title" id="section-title">—</div>
+      <div class="header-sub" id="section-pages">—</div>
+    </div>
+  </div>
+  <div class="section-detail-wrap" id="section-detail-content"></div>
+</div>
+
+<!-- MODAL: ADD MACHINE -->
+<div class="modal-overlay" id="add-modal" onclick="closeAddModal(event)">
+  <div class="modal">
+    <div class="modal-title">Ajouter une machine</div>
+    <div class="modal-desc">Entrez le nom et le fabricant de votre machine. Les plans seront disponibles dès que vous aurez fourni le PDF correspondant.</div>
+    <input class="modal-input" type="text" id="new-machine-name" placeholder="Nom du modèle (ex: FM5500H)" maxlength="40">
+    <input class="modal-input" type="text" id="new-machine-brand" placeholder="Fabricant (ex: Fasterholt)" maxlength="40">
+    <div class="modal-row">
+      <button class="btn btn-secondary" onclick="closeAddModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="addMachine()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA — FM5500H
+// ============================================================
+const FM5500H_SECTIONS = [
+  {
+    id: 's01',
+    name: 'Essieu avant et barre d\'attelage',
+    pages: 'p. 32–35',
+    parts: [
+      { pos: '1', ref: '2001545', qty: 1, name: 'Guide de tuyau avant', note: '' },
+      { pos: '2', ref: '1761026', qty: 1, name: 'Axe Ø 20 x 550', note: '' },
+      { pos: '3', ref: '1013094', qty: 2, name: 'Axe Ø 20 x 255', note: '' },
+      { pos: '4', ref: '761023', qty: 2, name: 'Galet porteur 5/4 x 170 mm', note: 'A1' },
+      { pos: '5', ref: '1761024', qty: 1, name: 'Galet porteur 5/4 x 470 mm', note: 'A3' },
+      { pos: '6', ref: '2013906', qty: 1, name: 'Étrier de dévidoir', note: '' },
+      { pos: '7', ref: '1010103', qty: 1, name: 'Axe Ø 20 x 290', note: '' },
+      { pos: '8', ref: '761273', qty: 1, name: 'Axe Ø 20 x 115', note: '' },
+      { pos: '9', ref: '761272', qty: 1, name: 'Galet porteur à roulement', note: 'A2' },
+      { pos: '10', ref: '1010105', qty: 1, name: 'Cran de sécurité', note: '' },
+      { pos: '10', ref: '2013907', qty: 1, name: 'Cran de sécurité - Roue de train avant pivotante', note: '' },
+      { pos: '11', ref: '1010100', qty: 1, name: 'Roue de train avant', note: '' },
+      { pos: '11', ref: '2013938', qty: 1, name: 'Roue de train avant pour guide de tuyau pivotant', note: '' },
+      { pos: '12', ref: '1001255', qty: 2, name: 'Piquet de terre 500 mm', note: '' },
+      { pos: '12', ref: '1010115', qty: 2, name: 'Piquet de terre 730 mm', note: '' },
+      { pos: '12', ref: '2003462', qty: 2, name: 'Piquet de terre 800 mm', note: '' },
+      { pos: '13', ref: '1008222', qty: 1, name: 'Goupille fendue horizontale', note: '' },
+      { pos: '14', ref: '761015-10', qty: 1, name: 'Enrouleur de câble complet', note: '' },
+      { pos: '15', ref: '2001942', qty: 1, name: 'Console d\'attelage', note: '' },
+      { pos: '16', ref: '2000612', qty: 1, name: 'Goupille fendue verticale', note: '' },
+      { pos: '17', ref: '2003348', qty: 1, name: 'Barre d\'attelage avant', note: '' },
+      { pos: '18', ref: '1001011', qty: 2, name: 'Ressort', note: '' },
+      { pos: '18', ref: '1011011', qty: 1, name: 'Ressort renforcé', note: '' },
+      { pos: '19', ref: '1010118', qty: 1, name: 'Cale', note: '' },
+      { pos: '20', ref: '505500', qty: 1, name: 'Treuil de traîneau de canon', note: '' },
+      { pos: '20', ref: '762036', qty: 1, name: 'Treuil avec câble', note: '3,5 mètres' },
+      { pos: '21', ref: '1007803', qty: 1, name: 'Câble en acier 5 x 3500 mm', note: '' },
+      { pos: '22', ref: '1008204', qty: 1, name: 'Ressort de barre d\'attelage - Attelage avant', note: '' },
+      { pos: '23', ref: '1014105', qty: 1, name: 'Roue avant gauche complète', note: '' },
+      { pos: '23', ref: '1014130', qty: 1, name: 'Roue avant gauche complète - Grande largeur de piste 2250 mm', note: '' },
+      { pos: '23', ref: '1014104', qty: 1, name: 'Roue avant droite complète', note: '' },
+      { pos: '23', ref: '1014132', qty: 1, name: 'Roue avant droite complète - Grande largeur de piste 2250 mm', note: '' },
+      { pos: '24', ref: '1014106', qty: 2, name: 'Pneu', note: '' },
+      { pos: '25', ref: '1014107', qty: 2, name: 'Jante', note: '' },
+      { pos: '26', ref: '1013114', qty: 1, name: 'Câble du système de sécurité de l\'enroulement', note: '' },
+      { pos: '27', ref: '761012-1', qty: 1, name: 'Cosse', note: '' },
+      { pos: '28', ref: '761013-1', qty: 3, name: 'Attache de câble', note: '' },
+      { pos: '29', ref: '763728', qty: 2, name: 'M10 x 20 hex. int.', note: 'B3' },
+      { pos: '30', ref: '021010065', qty: 1, name: 'Boulon en acier M10 x 65', note: 'B4' },
+      { pos: '31', ref: '022216045', qty: 4, name: 'Boulon de fixation M16 x 45', note: 'B1' },
+      { pos: '32', ref: '044012', qty: 4, name: 'Écrou de verrouillage M12', note: 'B1' },
+      { pos: '33', ref: '040416', qty: 7, name: 'Écrou en acier M16', note: 'B1 et B5 et B2' },
+      { pos: '34', ref: '050316', qty: 4, name: 'Rondelle M16', note: 'B1' },
+      { pos: '35', ref: '763916', qty: 8, name: 'Ripp Lock M16', note: 'B1 et B5 et B2' },
+      { pos: '36', ref: '761286', qty: 1, name: 'Mamelon de graissage', note: '' },
+      { pos: '37', ref: '761286-2', qty: 1, name: 'Chapeau de mamelon de graissage', note: '' },
+      { pos: '38', ref: '044010', qty: 3, name: 'Écrou de verrouillage M10', note: 'B3' },
+      { pos: '39', ref: '021016230', qty: 1, name: 'Boulon en acier M16 x 230', note: 'B2' },
+      { pos: '40', ref: '030512085', qty: 4, name: 'M12 x 85 hex. int.', note: 'B1' },
+      { pos: '41', ref: '1008226', qty: 2, name: 'Collerette', note: '' },
+      { pos: '42', ref: '761271', qty: 6, name: 'Palier nylon', note: '' },
+    ]
+  },
+  {
+    id: 's02',
+    name: 'Nouvelle barre d\'attelage — essieu avant 2022',
+    pages: 'p. 36–37',
+    parts: [
+      { pos: '1', ref: '2013938', qty: 1, name: 'Roue de train avant', note: '' },
+      { pos: '2', ref: '761271', qty: 4, name: 'Palier nylon', note: '' },
+      { pos: '3', ref: '1010103', qty: 1, name: 'Axe 290 mm', note: '' },
+      { pos: '4', ref: '761273', qty: 1, name: 'Axe 115 mm', note: '' },
+      { pos: '5', ref: '2013907', qty: 1, name: 'Cran de sécurité pour roue de train avant pivotante', note: '' },
+      { pos: '6', ref: '761272', qty: 1, name: 'Galet porteur à roulement', note: '' },
+      { pos: '7', ref: '040416', qty: 3, name: 'Écrou en acier M16', note: '' },
+      { pos: '8', ref: '2013906', qty: 1, name: 'Étrier pour guide de tuyau pivotant', note: '' },
+      { pos: '9', ref: '021012220', qty: 1, name: 'Boulon en acier M12 x 220', note: '' },
+      { pos: '10', ref: '2013985', qty: 1, name: 'Pièce pivotante pour guide de tuyau pivotant', note: '' },
+      { pos: '11', ref: '538127', qty: 2, name: 'Bague Glacier', note: '' },
+      { pos: '12', ref: '2014260', qty: 1, name: 'Rondelle d\'axe', note: '' },
+      { pos: '13', ref: '040420', qty: 1, name: 'Écrou en acier M20', note: '' },
+      { pos: '14', ref: '1001011', qty: 2, name: 'Ressort de cran d\'arrêt', note: '' },
+      { pos: '15', ref: '2013925', qty: 1, name: 'Plaque de treuil', note: '' },
+      { pos: '16', ref: '505500', qty: 1, name: 'Treuil', note: '' },
+      { pos: '17', ref: '1007811', qty: 1, name: 'Câble en acier', note: '7m' },
+      { pos: '18', ref: '2014198', qty: 1, name: 'Gaine de protection du ressort', note: '' },
+      { pos: '19', ref: '1008202', qty: 1, name: 'Poulie pour treuil', note: '' },
+      { pos: '20', ref: '1562221614', qty: 1, name: 'Manille en acier', note: '' },
+      { pos: '21', ref: '2013981', qty: 1, name: 'Attelage avec roue de train avant pivotante', note: '' },
+      { pos: '22', ref: '1008204', qty: 1, name: 'Ressort', note: '' },
+    ]
+  },
+  {
+    id: 's03',
+    name: 'Essieu avant',
+    pages: 'p. 38–39',
+    parts: [
+      { pos: '1', ref: '2000193', qty: 1, name: 'Essieu avant', note: '' },
+      { pos: '2', ref: '1008101', qty: 3, name: 'Bague', note: '' },
+      { pos: '3', ref: '2002081', qty: 4, name: 'Bague de mandrin', note: '' },
+      { pos: '4', ref: '2000174', qty: 2, name: 'Coussinet de palier de l\'essieu avant', note: '' },
+      { pos: '5', ref: '1013086', qty: 2, name: 'Butée', note: '' },
+      { pos: '6', ref: '761286', qty: 2, name: 'Mamelon de graissage', note: '' },
+      { pos: '7', ref: '761286-2', qty: 2, name: 'Chapeau de mamelon de graissage', note: '' },
+      { pos: '8', ref: '1008102', qty: 1, name: 'Bague', note: '' },
+      { pos: '9', ref: '2000113', qty: 1, name: 'Axe de l\'essieu avant', note: '' },
+      { pos: '10', ref: '1008195', qty: 2, name: 'Anneau de butée d\'essieu avant', note: '' },
+      { pos: '11', ref: '2000178-1', qty: 2, name: 'Mandrin complet avec moyeu', note: '' },
+      { pos: '12', ref: '030012100', qty: 4, name: 'M12 x 100 hex. int. unbrako', note: '' },
+      { pos: '13', ref: '2003352', qty: 1, name: 'Bras de mandrin', note: '' },
+      { pos: '14', ref: '044012', qty: 4, name: 'Écrou de verrouillage M12', note: '' },
+      { pos: '15', ref: '1009181-6', qty: 2, name: 'Capsule de moyeu', note: '' },
+      { pos: '16', ref: '1009181-5', qty: 2, name: 'Écrou à calotte', note: '' },
+      { pos: '17', ref: '1009181-1', qty: 2, name: 'Roulement à galets coniques', note: '' },
+      { pos: '18', ref: '1009181-4', qty: 12, name: 'Écrou de moyeu M18', note: '' },
+      { pos: '19', ref: '1009180-1', qty: 2, name: 'Moyeu', note: '' },
+      { pos: '20', ref: '1009181-3', qty: 12, name: 'Boulon de moyeu M18', note: '' },
+      { pos: '21', ref: '1009181-2', qty: 2, name: 'Roulement à galets coniques', note: '' },
+      { pos: '22', ref: '1009181-7', qty: 2, name: 'Rondelle de joint', note: '' },
+      { pos: '23', ref: '2003862', qty: 2, name: 'Bras de mandrin', note: '' },
+      { pos: '24', ref: '2001887', qty: 1, name: 'Bras de mandrin droit', note: '' },
+      { pos: '25', ref: '1013090', qty: 2, name: 'Rotule de direction D', note: '' },
+      { pos: '26', ref: '1013092', qty: 2, name: 'Contre-écrou D', note: '' },
+      { pos: '27', ref: '1013093', qty: 2, name: 'Contre-écrou G', note: '' },
+      { pos: '28', ref: '1013091', qty: 2, name: 'Rotule de direction G', note: '' },
+      { pos: '29', ref: '2000395', qty: 2, name: 'Bras maître', note: '' },
+      { pos: '30', ref: '1013100', qty: 2, name: 'Cylindre', note: '' },
+    ]
+  },
+  {
+    id: 's04',
+    name: 'Voie transversale',
+    pages: 'p. 40–41',
+    parts: [
+      { pos: '1', ref: '1001290', qty: 1, name: 'Pignon 3/4 18 dents', note: '' },
+      { pos: '2', ref: '1013077', qty: 1, name: 'Chaîne', note: '' },
+      { pos: '3', ref: '1013080', qty: 1, name: 'Axe à voie transversale', note: '' },
+      { pos: '4', ref: '761289-1', qty: 2, name: 'Palier à chapeau', note: '' },
+      { pos: '5', ref: '022216050', qty: 4, name: 'Boulon de fixation M16 x 50', note: '' },
+      { pos: '6', ref: '022210050', qty: 2, name: 'Boulon en acier M10 x 50', note: '' },
+      { pos: '7', ref: '2006659', qty: 1, name: 'Plaque de protection', note: '' },
+      { pos: '8', ref: '894955', qty: 2, name: 'Bouchon de plaque de protection', note: '' },
+      { pos: '9', ref: '1009875-5', qty: 1, name: 'Manchon de guidage complet', note: 'Voir A1' },
+      { pos: '10', ref: '1008485', qty: 2, name: 'Support de conduite de support', note: '' },
+      { pos: '11', ref: '022212030', qty: 4, name: 'Boulon de fixation M12 x 30', note: '' },
+      { pos: '12', ref: '021010075', qty: 2, name: 'Boulon en acier M10 x 75', note: '' },
+      { pos: '13', ref: '1013075', qty: 1, name: 'Conduite de support pour guide de tuyau', note: '' },
+      { pos: '15', ref: '1013071', qty: 1, name: 'Support de câble de capteur d\'enroulement', note: '' },
+      { pos: '17', ref: '022212055', qty: 2, name: 'Boulon de fixation M12 x 55', note: '' },
+      { pos: '18', ref: '761329', qty: 4, name: 'Jonc d\'arrêt Ø 60', note: '' },
+      { pos: '19', ref: '761293', qty: 2, name: 'Bague', note: '' },
+      { pos: '20', ref: '2008560', qty: 1, name: 'Mamelon de graissage', note: '' },
+      { pos: '21', ref: '761286-2', qty: 1, name: 'Chapeau de mamelon de graissage', note: '' },
+      { pos: '22', ref: '2011874', qty: 1, name: 'Manchon d\'étrier', note: '' },
+      { pos: '23', ref: '1115100070-1', qty: 4, name: 'Rondelle élastique', note: '' },
+      { pos: '24', ref: '34000009', qty: 2, name: 'Coussinet de palier de l\'étrier', note: '' },
+      { pos: '25', ref: '761285', qty: 1, name: 'Jonc d\'arrêt int. Ø 42', note: '' },
+      { pos: '26', ref: '34000012', qty: 1, name: 'Arbre de détour (Cheville)', note: '' },
+      { pos: '27', ref: '1009875', qty: 1, name: 'Manchon de guidage', note: '' },
+      { pos: '28', ref: '763916', qty: 8, name: 'Ripp Lock M16', note: '' },
+      { pos: '29', ref: '763912', qty: 4, name: 'Ripp Lock M12', note: '' },
+      { pos: '30', ref: '050316', qty: 4, name: 'Rondelle M16', note: '' },
+      { pos: '31', ref: '044010', qty: 1, name: 'Écrou de verrouillage M10', note: '' },
+      { pos: '32', ref: '044012', qty: 8, name: 'Écrou de verrouillage M12', note: '' },
+      { pos: '33', ref: '040416', qty: 6, name: 'Écrou en acier M16', note: '' },
+      // Guide de tuyau (page 42–43)
+      { pos: '1', ref: '1010090', qty: 1, name: 'Cadre de l\'étrier du guide de tuyau', note: '' },
+      { pos: '2', ref: '044016', qty: 4, name: 'Écrou de verrouillage M16', note: '' },
+      { pos: '3', ref: '763916', qty: 4, name: 'Ripp Lock M16', note: '' },
+      { pos: '4', ref: '1010096', qty: 4, name: 'Galet porteur', note: '' },
+      { pos: '5', ref: '044012', qty: 4, name: 'Écrou de verrouillage M12', note: '' },
+      { pos: '6', ref: '022212030', qty: 4, name: 'Boulon de fixation M12 x 30', note: '' },
+      { pos: '7', ref: '1008490', qty: 2, name: 'Barre de renfort de l\'étrier de la conduite de support', note: '' },
+      { pos: '8', ref: '1013070', qty: 1, name: 'Support de rouleau mesureur', note: '' },
+      { pos: '9', ref: '14000056', qty: 1, name: 'Équerre', note: '' },
+      { pos: '10', ref: '1007561-2', qty: 1, name: 'Capteur double', note: '' },
+      { pos: '11', ref: '1013065', qty: 1, name: 'Rouleau mesureur avec aimants', note: '' },
+      { pos: '12', ref: '037808', qty: 1, name: 'Tige filetée', note: '0,3m' },
+      { pos: '13', ref: '1013065-2', qty: 1, name: 'Bague de rouleau mesureur', note: '' },
+      { pos: '14', ref: '763908', qty: 1, name: 'Ripp Lock M8', note: '' },
+      { pos: '15', ref: '044008', qty: 1, name: 'Écrou de verrouillage M8', note: '' },
+      { pos: '16', ref: '34000037', qty: 1, name: 'Bouchon d\'extrémité du rouleau mesureur', note: '' },
+      { pos: '17', ref: '1013065-1', qty: 1, name: 'Rouleau mesureur sans fin', note: '' },
+      { pos: '18', ref: '34000062', qty: 1, name: 'Bouchon d\'extrémité des aimants', note: '' },
+      { pos: '19', ref: '1007570', qty: 4, name: 'Aimant', note: '' },
+      { pos: '20', ref: '761271', qty: 8, name: 'Palier nylon', note: '' },
+      { pos: '21', ref: '1010096-1', qty: 4, name: 'Tuyau du dévidoir', note: '' },
+      { pos: '22', ref: '761025', qty: 4, name: 'Axe', note: '' },
+      { pos: '23', ref: '095008019', qty: 2, name: 'Vis à œillet M8x20', note: '' },
+      { pos: '24', ref: '661215', qty: 2, name: 'Ressorts', note: '' },
+    ]
+  },
+  {
+    id: 's05',
+    name: 'Protections',
+    pages: 'p. 44–45',
+    parts: [
+      { pos: '1', ref: '1013054', qty: 1, name: 'Grande protection latérale - droite', note: '' },
+      { pos: '2', ref: '1013053', qty: 1, name: 'Grande protection latérale - gauche', note: '' },
+      { pos: '3', ref: '1013050', qty: 2, name: 'Grande protection arrière latérale - D/G', note: '' },
+      { pos: '4', ref: '1013051', qty: 2, name: 'Petite protection latérale - droite', note: '' },
+      { pos: '5', ref: '1013052', qty: 2, name: 'Petite protection latérale - gauche', note: '' },
+      { pos: '6', ref: '1013058', qty: 1, name: 'Protection intérieure - droite', note: '' },
+      { pos: '7', ref: '1013059', qty: 1, name: 'Protection extérieure - gauche', note: '' },
+      { pos: '8', ref: '1010525', qty: 1, name: 'Plaque supérieure', note: '' },
+      { pos: '9', ref: '2001754', qty: 1, name: 'Plaque de fond de boîte à outils', note: '' },
+      { pos: '10', ref: '1013057', qty: 2, name: 'Petite protection d\'angle avant', note: '' },
+      { pos: '11', ref: '1009342', qty: 1, name: 'Boîte à outils', note: '' },
+      { pos: '12', ref: '1013056', qty: 1, name: 'Plaque signalétique', note: '' },
+    ]
+  },
+  {
+    id: 's06',
+    name: 'Cliquet de verrouillage',
+    pages: 'p. 46–47',
+    parts: [
+      { pos: '1', ref: '680009', qty: 1, name: 'Poignée en caoutchouc', note: '' },
+      { pos: '2', ref: '2002324-1', qty: 1, name: 'Cliquet de verrouillage du support', note: '' },
+      { pos: '3', ref: '2002322-1', qty: 1, name: 'Cliquet de verrouillage de la barre d\'attelage', note: '' },
+      { pos: '4', ref: 'E1096', qty: 1, name: 'Frein électrique', note: '' },
+      { pos: '6', ref: '2003238', qty: 2, name: 'Plaque de renforcement de l\'engrenage', note: '' },
+      { pos: '7', ref: '2002851', qty: 1, name: 'Plaque de renforcement supérieure de l\'engrenage', note: '' },
+      { pos: '8', ref: '2000910', qty: 2, name: 'Butée d\'arrêt de l\'engrenage', note: '' },
+      { pos: '9', ref: '761113-2', qty: 1, name: 'Levier d\'accouplement', note: '' },
+      { pos: '10', ref: '040416', qty: 1, name: 'Écrou en acier M16', note: '' },
+      { pos: '11', ref: '570114', qty: 1, name: 'Ressort de barre d\'attelage', note: '' },
+      { pos: '12', ref: '021010090', qty: 1, name: 'Boulon en acier M10 x 90', note: '' },
+      { pos: '13', ref: '2002680-2', qty: 1, name: 'Pièce détachée de la partie supérieure du cliquet de verrouillage', note: '' },
+      { pos: '14', ref: '763910', qty: 2, name: 'Ripp Lock M10', note: '' },
+      { pos: '15', ref: '109101', qty: 1, name: 'Entretoise de la valve de commutation', note: '' },
+      { pos: '16', ref: '044010', qty: 1, name: 'Écrou de verrouillage M10', note: '' },
+      { pos: '17', ref: '021016090', qty: 1, name: 'Boulon en acier M16 x 90', note: '' },
+      { pos: '18', ref: '761286', qty: 2, name: 'Mamelon de graissage', note: '' },
+      { pos: '19', ref: '2002680', qty: 1, name: 'Pièce détachée du fond du cliquet de verrouillage', note: '' },
+      { pos: '20', ref: '1009337', qty: 2, name: 'Bague d\'axe de frein', note: '' },
+      { pos: '21', ref: '1008355', qty: 1, name: 'Axe de frein', note: '' },
+      { pos: '22', ref: '902119', qty: 1, name: 'Patin de frein', note: '' },
+      { pos: '23', ref: '1009335', qty: 1, name: 'Conduite pour bagues de frein', note: '' },
+      { pos: '24', ref: '902120-1', qty: 1, name: 'Sabot de frein', note: '' },
+      { pos: '25', ref: '761110', qty: 1, name: 'Ressort', note: '' },
+      { pos: '26', ref: '1009275', qty: 1, name: 'Bras de frein', note: '' },
+      { pos: '27', ref: '2002680-1', qty: 1, name: 'Cliquet de verrouillage complet', note: 'A1' },
+      { pos: '28', ref: '1550041270', qty: 1, name: 'Chaîne', note: '0,25m' },
+    ]
+  },
+  {
+    id: 's07',
+    name: 'Enrouleur',
+    pages: 'p. 48–51',
+    parts: [
+      { pos: '1', ref: '000090402', qty: 1, name: 'Coude 1/4', note: '' },
+      { pos: '2', ref: '1010978', qty: 1, name: 'Mamelon droit 1/4 x Ø 12 mm', note: '' },
+      { pos: '3', ref: '012120402', qty: 1, name: 'Tube de mamelon 1/4', note: '' },
+      { pos: '4', ref: '1013940', qty: 1, name: 'Bloc aluminium complet', note: '' },
+      { pos: '5', ref: '030010080', qty: 8, name: 'M10 x 80 ronde hex. int.', note: '' },
+      { pos: '6', ref: '030512130', qty: 5, name: 'M12 x 130 hex. int.', note: '' },
+      { pos: '7', ref: '1013930', qty: 1, name: 'Moteur à pistons E-Koed', note: '' },
+      { pos: '7', ref: '1013935', qty: 1, name: 'Moteur à pistons Brevini/Reggiana', note: '' },
+      { pos: '8', ref: '056212', qty: 5, name: 'Rondelle à ressort', note: '' },
+      { pos: '9', ref: '1013920', qty: 1, name: 'Engrenage de moteur à pistons E-Koed', note: '' },
+      { pos: '9', ref: '1013922', qty: 1, name: 'Engrenage de moteur à pistons Brevini', note: '' },
+      { pos: '9', ref: '1013925', qty: 1, name: 'Engrenage de moteur à pistons Reggiana', note: '' },
+      { pos: '10', ref: '021012050', qty: 10, name: 'Boulon en acier M12 x 50', note: '' },
+      { pos: '11', ref: '2003316', qty: 1, name: 'Console d\'appui', note: '' },
+      { pos: '12', ref: '050312', qty: 20, name: 'Rondelle M12', note: '' },
+      { pos: '13', ref: '044012', qty: 10, name: 'Écrou de verrouillage M12', note: '' },
+      { pos: '14', ref: 'E1307', qty: 1, name: 'Jeu d\'engrenages', note: 'Année 2022' },
+      // Enrouleur tuyau 5500H
+      { pos: '1', ref: '36000151', qty: 1, name: 'Bague anticorrosion', note: '' },
+      { pos: '2', ref: '624101', qty: 1, name: 'Joint torique de la bague anticorrosion', note: '' },
+      { pos: '3', ref: '1115150100', qty: 1, name: 'Jonc d\'arrêt ext. Ø 100', note: '' },
+      { pos: '4', ref: '1010490-2', qty: 2, name: 'Roulement', note: '' },
+      { pos: '5', ref: '033010016', qty: 2, name: 'Vis d\'arrêt M10x16', note: '' },
+      { pos: '6', ref: '1010027', qty: 1, name: 'Pignon', note: '' },
+      { pos: '7', ref: 'E1307', qty: 1, name: 'Jeu d\'engrenages', note: 'Reggiana' },
+      { pos: '8', ref: '023020070-1', qty: 6, name: 'Boulon de fixation M20x70', note: '' },
+      { pos: '9', ref: '763615', qty: 6, name: 'Rondelle M20', note: '' },
+      { pos: '10', ref: '2000967', qty: 1, name: 'Bride avec bague cannelée 70 mm', note: '' },
+      { pos: '10', ref: '2000936', qty: 1, name: 'Bride avec bague cannelée 60 mm', note: '' },
+      { pos: '11', ref: '1013015', qty: 1, name: 'Enrouleur de tuyau 5500H', note: '' },
+      { pos: '12', ref: '2012257', qty: 1, name: 'Vanne de dérivation de pression', note: '' },
+      { pos: '12', ref: '1013965', qty: 1, name: 'Vanne de dérivation de pression 5 bar', note: '' },
+      { pos: '13', ref: '1010972', qty: 1, name: 'Bouchon 1/4 filetage externe', note: '' },
+      { pos: '14', ref: '1013941', qty: 1, name: 'Bloc en alu sur moteur à huile', note: 'Groupe Italie' },
+      { pos: '15', ref: '1007724', qty: 3, name: 'Mamelon droit 3/8', note: '' },
+      { pos: '16', ref: '1008622', qty: 4, name: 'Coude Ø 12 avec fixation fixe', note: '' },
+      { pos: '17', ref: '1010979', qty: 2, name: 'Mamelon juste devant le manomètre', note: '' },
+      { pos: '18', ref: '761163-4', qty: 2, name: 'Manomètre', note: '' },
+      { pos: '19', ref: '2012256', qty: 1, name: 'Clapet anti-retour Brevini', note: '' },
+      { pos: '19', ref: '1013943', qty: 1, name: 'Clapet anti-retour E-Koed', note: '' },
+      { pos: '20', ref: '1013948', qty: 1, name: 'Clapet anti-retour d\'entraînement de l\'enrouleur E-Koed', note: '' },
+      { pos: '21', ref: '2012255', qty: 1, name: 'Vanne avec régulateur de pression Brevini', note: '' },
+      { pos: '21', ref: '1013942', qty: 1, name: 'Vanne avec régulateur de pression E-Koed', note: '' },
+      { pos: '22', ref: '1010978', qty: 2, name: 'Mamelon droit 1/4', note: '' },
+    ]
+  },
+  {
+    id: 's08',
+    name: 'Turbine de l\'enrouleur',
+    pages: 'p. 52–63',
+    parts: [
+      { pos: '1', ref: '2001491', qty: 2, name: 'Équerre', note: '' },
+      { pos: '2', ref: '762080', qty: 2, name: 'Ensemble de panneaux solaires', note: '' },
+      { pos: '3', ref: 'E1095', qty: 1, name: 'Frein électrique complet', note: '' },
+      { pos: '4', ref: '14050043', qty: 1, name: 'Anneau en caoutchouc HK 108', note: '' },
+      { pos: '5', ref: '1013034', qty: 1, name: 'Boule HK 108', note: '' },
+      { pos: '6', ref: '14050013', qty: 1, name: 'Anneau de verrouillage HK 108', note: '' },
+      { pos: '7', ref: '16050215', qty: 1, name: 'Tuyau', note: '1,46m' },
+      { pos: '8', ref: '16200730', qty: 4, name: 'Collier de serrage', note: '' },
+      { pos: '9', ref: '1009120', qty: 1, name: 'Suspension de la turbine', note: '' },
+      { pos: '10', ref: '761276', qty: 1, name: 'Roulement', note: '' },
+      { pos: '11', ref: '311215', qty: 1, name: 'Pignon', note: '' },
+      { pos: '12', ref: '761275', qty: 1, name: 'Axe', note: '' },
+      { pos: '13', ref: '1007695', qty: 1, name: 'Protection de chaîne', note: '' },
+      { pos: '14', ref: '2351278', qty: 1, name: 'Pignon complet', note: '' },
+      // Turbine (p.58-59)
+      { pos: '1', ref: '095906', qty: 16, name: 'Écrou de verrouillage M6', note: '' },
+      { pos: '2', ref: '096506035', qty: 16, name: 'M6 x 35 Pointe de boulon de support', note: '' },
+      { pos: '3', ref: '13000086', qty: 1, name: 'Bride de surface de la turbine de conduite supérieure', note: '' },
+      { pos: '4', ref: '195211', qty: 2, name: 'Joint torique de capot', note: '' },
+      { pos: '5', ref: '195001', qty: 1, name: 'Carter de turbine', note: '' },
+      { pos: '6', ref: '195010', qty: 1, name: 'Robinet à boisseau sphérique', note: '' },
+      { pos: '7', ref: '096012', qty: 1, name: 'Écrou M12', note: '' },
+      { pos: '8', ref: '096112', qty: 1, name: 'Rondelle à ressort M12', note: '' },
+      { pos: '9', ref: '195031', qty: 1, name: 'Roue à ailettes', note: '' },
+      { pos: '10', ref: 'P195201', qty: 1, name: 'Joint étanche de l\'arbre de turbine', note: '' },
+      { pos: '11', ref: '195018', qty: 1, name: 'Capot de presse-étoupe 20/50', note: '' },
+      { pos: '12', ref: '195036', qty: 1, name: 'Axe', note: '' },
+      { pos: '13', ref: '195255', qty: 1, name: 'Clavette', note: '4 x 4 29' },
+      { pos: '14', ref: '195050', qty: 1, name: 'Bague d\'étanchéité', note: '' },
+      { pos: '15', ref: '701035', qty: 1, name: 'Jonc d\'arrêt int.', note: '' },
+      { pos: '16', ref: '700015', qty: 2, name: 'Jonc d\'arrêt ext.', note: '' },
+      { pos: '17', ref: '195220', qty: 2, name: 'Roulement avant', note: '' },
+      { pos: '18', ref: '517715', qty: 1, name: 'Virole', note: '' },
+      { pos: '19', ref: '195013', qty: 1, name: 'Logement de palier', note: '' },
+      { pos: '20', ref: '195500', qty: 1, name: 'Capot de turbine complet', note: '' },
+      { pos: '21', ref: '195000V', qty: 1, name: 'Turbine complète', note: '' },
+      // Vanne motorisée p.62-63
+      { pos: '1', ref: '1007230', qty: 1, name: 'Vanne motorisée complète', note: '' },
+      { pos: '5', ref: '1007250', qty: 1, name: 'Vanne papillon', note: '' },
+      { pos: '7', ref: '1007180', qty: 1, name: 'Moteur de la vanne', note: '' },
+      { pos: '14', ref: '33000227', qty: 1, name: 'Conduite de sortie de la turbine', note: '' },
+      { pos: '15', ref: '1001163', qty: 1, name: 'Manomètre glycérine', note: '' },
+      { pos: '21', ref: '33000226', qty: 1, name: 'Conduite inférieure de la turbine', note: '' },
+      { pos: '31', ref: '1010944', qty: 1, name: 'Pompe double', note: '' },
+    ]
+  },
+  {
+    id: 's09',
+    name: 'Cran d\'arrêt',
+    pages: 'p. 64–65',
+    parts: [
+      { pos: '1', ref: '1013126', qty: 1, name: 'Support de levier de barre d\'arrêt', note: '' },
+      { pos: '2', ref: '763300', qty: 1, name: 'Levier à boule', note: '' },
+      { pos: '3', ref: '1013125', qty: 1, name: 'Levier de barre d\'arrêt', note: '' },
+      { pos: '4', ref: '761274', qty: 1, name: 'Ressort de barre d\'attelage', note: '' },
+      { pos: '5', ref: '1013120', qty: 1, name: 'Système de sécurité de l\'enroulement', note: '' },
+      { pos: '6', ref: '1013114', qty: 1, name: 'Câble du système de sécurité de l\'enroulement', note: '' },
+      { pos: '7', ref: '801711', qty: 1, name: 'Bouchon en plastique pour coupleur mâle', note: '' },
+      { pos: '8', ref: '801710', qty: 1, name: 'Branchement huile', note: '' },
+      { pos: '9', ref: '1007538', qty: 1, name: 'Mamelon droit 1/2 x 3/8', note: '' },
+      { pos: '10', ref: '552025', qty: 1, name: 'Bague d\'étanchéité 3/8', note: '' },
+      { pos: '11', ref: 'BS20', qty: 1, name: 'Joint 20 mm', note: '' },
+      { pos: '12', ref: '1007724', qty: 6, name: 'Mamelon droit 3/8', note: '' },
+      { pos: '13', ref: '1010755', qty: 1, name: 'Robinet à boisseau sphérique bidirectionnel', note: '' },
+      { pos: '19', ref: '1007510', qty: 1, name: 'Robinet à boisseau sphérique 3/8', note: '' },
+      { pos: '31', ref: '1007560', qty: 1, name: 'Capteur', note: '' },
+      { pos: '32', ref: '1008265', qty: 1, name: 'Conduite du capteur de fin de course', note: '' },
+      { pos: '35', ref: '1005530', qty: 1, name: 'Aimant', note: '' },
+      { pos: '36', ref: '1009347', qty: 1, name: 'Support de l\'aimant sur le capteur', note: '' },
+    ]
+  },
+  {
+    id: 's10',
+    name: 'Attelage arrière',
+    pages: 'p. 66–67',
+    parts: [
+      { pos: '1', ref: '1008966', qty: 1, name: 'Triangle de signalisation', note: '' },
+      { pos: '2', ref: '2013411', qty: 1, name: 'Attelage arrière complet', note: '' },
+      { pos: '3', ref: '2001754', qty: 1, name: 'Plaque de fond de boîte à outils', note: '' },
+      { pos: '4', ref: '2002024', qty: 2, name: 'Bague', note: '' },
+      { pos: '5', ref: '2004002-1', qty: 2, name: 'Entretoise', note: '' },
+      { pos: '6', ref: '2002561', qty: 1, name: 'Anneau de butée', note: '' },
+      { pos: '7', ref: '1013100', qty: 1, name: 'Cylindre de direction forcée', note: '' },
+      { pos: '8', ref: '1013101', qty: 1, name: 'Garniture d\'étanchéité', note: '' },
+      { pos: '13', ref: '763642', qty: 2, name: 'Goupille de tracteur', note: 'B2 De Ens' },
+      { pos: '14', ref: '022216045', qty: 16, name: 'Boulon de fixation en acier M16 x 45', note: 'B4' },
+      { pos: '17', ref: '040416', qty: 16, name: 'Écrou de verrouillage M16', note: 'B4' },
+      { pos: '18', ref: '1013829', qty: 2, name: 'Tuyau hyd. de direction forcée', note: 'B2 De Ens' },
+      { pos: '19', ref: '022224060', qty: 2, name: 'Boulon de fixation en acier M24x60', note: '' },
+    ]
+  },
+  {
+    id: 's11',
+    name: 'Pièce sur attelage arrière',
+    pages: 'p. 68–69',
+    parts: [
+      { pos: '1', ref: '2001773', qty: 1, name: 'Cadre de l\'attelage arrière', note: '' },
+      { pos: '2', ref: '761274', qty: 1, name: 'Ressort de barre d\'attelage', note: '' },
+      { pos: '3', ref: '2004055-1', qty: 1, name: 'Désengageur', note: '' },
+      { pos: '4', ref: '680009', qty: 1, name: 'Levier', note: '' },
+      { pos: '5', ref: '1009250', qty: 1, name: 'Levier de clavette', note: '' },
+      { pos: '6', ref: '2004913', qty: 2, name: 'Support de cale', note: '' },
+      { pos: '7', ref: '2004912', qty: 2, name: 'Cale', note: '' },
+      { pos: '8', ref: '1007536', qty: 3, name: 'Cylindre coudé 3/4 x 3/4', note: '' },
+      { pos: '9', ref: '1010750', qty: 1, name: 'Robinet à boisseau sphérique au niveau de la pompe double', note: '' },
+      { pos: '10', ref: '1007514', qty: 2, name: 'Porte-tuyau', note: '' },
+      { pos: '11', ref: '1007510', qty: 1, name: 'Robinet à boisseau sphérique 3/8', note: '' },
+      { pos: '12', ref: '1010530', qty: 1, name: 'Échelle', note: '' },
+      { pos: '13', ref: '1010525', qty: 1, name: 'Plaque supérieure', note: '' },
+      { pos: '27', ref: '1007590', qty: 1, name: 'Plaque de la batterie', note: '' },
+      { pos: '28', ref: '1005521', qty: 1, name: 'Batterie', note: '' },
+      { pos: '29', ref: '1007578', qty: 1, name: 'Boîtier du programme Pluie', note: '' },
+      { pos: '31', ref: '1007549-35', qty: 1, name: 'Prg. Pluie intégré', note: '' },
+      { pos: '32', ref: '1007549-2', qty: 1, name: 'Prog. Pluie', note: '' },
+      { pos: '33', ref: '1007484', qty: 1, name: 'Carter de filtre', note: '' },
+      { pos: '34', ref: '1007482', qty: 1, name: 'Filtre hydraulique', note: '' },
+      { pos: '35', ref: '1007490', qty: 1, name: 'Réservoir', note: '' },
+      { pos: '36', ref: '1007500', qty: 1, name: 'Capot de réservoir', note: '' },
+    ]
+  },
+  {
+    id: 's12',
+    name: 'Pont arrière',
+    pages: 'p. 70–73',
+    parts: [
+      { pos: '10', ref: '2002813', qty: 1, name: 'Jauge d\'huile', note: '' },
+      { pos: '13', ref: '2009078', qty: 2, name: 'Renforcement de pont arrière', note: '' },
+      { pos: '14', ref: '1009498', qty: 1, name: 'Pont arrière', note: '' },
+      { pos: '15', ref: '1009285', qty: 2, name: 'Tuyau/Pot', note: '' },
+      { pos: '16', ref: '1014116', qty: 2, name: 'Pneu arrière', note: '' },
+      { pos: '17', ref: '1014120', qty: 2, name: 'Jante', note: '' },
+      { pos: '18', ref: '1014125', qty: 1, name: 'Roue arrière gauche complète', note: '' },
+      { pos: '18', ref: '1014125-2', qty: 1, name: 'Roue arrière droite complète', note: '' },
+      { pos: '1', ref: '1007571', qty: 4, name: 'Aimant intégré', note: 'B1' },
+      { pos: '2', ref: '763770', qty: 4, name: 'Boulon Umbrako M10 x 22', note: 'B1' },
+      { pos: '3', ref: '763908', qty: 6, name: 'Ripp Lock M8', note: 'B3' },
+      { pos: '5', ref: '763910', qty: 4, name: 'Ripp Lock M10', note: 'B1' },
+      { pos: '6', ref: '021020220', qty: 8, name: 'Boulon en acier M20 x 220', note: 'B4' },
+      { pos: '7', ref: '044020', qty: 8, name: 'Écrou de verrouillage M20', note: 'B4' },
+      // pont arrière détail p.78-79
+      { pos: '1', ref: '1009645', qty: 1, name: 'Piste de l\'axe 2050 mm', note: '' },
+      { pos: '2', ref: '1009571', qty: 1, name: 'Écrou à anneau', note: '' },
+      { pos: '3', ref: '1009572', qty: 1, name: 'Joint torique', note: '' },
+      { pos: '4', ref: '1009573', qty: 1, name: 'Bride de cardan', note: '' },
+      { pos: '5', ref: '1009574', qty: 1, name: 'Écrou à anneau M40', note: '' },
+      { pos: '6', ref: '1009575', qty: 1, name: 'Siège de ressort', note: '' },
+      { pos: '7', ref: '1009576', qty: 1, name: 'Rondelle de blocage', note: '' },
+      { pos: '8', ref: '1009577', qty: 1, name: 'Joint torique', note: '' },
+      { pos: '9', ref: '1009578', qty: 1, name: 'Rondelle-entretoise', note: '' },
+      { pos: '10', ref: '1009579', qty: 1, name: 'Jonc d\'arrêt sans œillet', note: '' },
+      { pos: '11', ref: '1009615', qty: 1, name: 'Couronne/Pignon', note: '' },
+      { pos: '12', ref: '1009581', qty: 1, name: 'Ensemble de réparation de frein', note: '' },
+      { pos: '13', ref: '1009647', qty: 1, name: 'Collet à pression', note: '' },
+      { pos: '14', ref: '1009455-6', qty: 8, name: 'Boulon de moyeu M22', note: '' },
+      { pos: '15', ref: '1009456-6', qty: 8, name: 'Écrou de moyeu M22', note: '' },
+    ]
+  },
+  {
+    id: 's13',
+    name: 'Crémaillère',
+    pages: 'p. 74–77',
+    parts: [
+      { pos: '1', ref: '1009500', qty: 1, name: 'Engrenage complet', note: '' },
+      { pos: '2', ref: '1009504', qty: 1, name: 'Jonc d\'arrêt 95 mm', note: '' },
+      { pos: '3', ref: '1009505', qty: 1, name: 'Bague d\'étanchéité Ø 60/95x10', note: '' },
+      { pos: '4', ref: '1009506', qty: 1, name: 'Axe creux Ø 40', note: '' },
+      { pos: '5', ref: '1009507', qty: 1, name: 'Jonc d\'arrêt 62 mm', note: '' },
+      { pos: '6', ref: '1009508', qty: 1, name: 'Capot Ø 62', note: '' },
+      { pos: '7', ref: '1009509', qty: 1, name: 'Axe/Engrenage', note: '' },
+      { pos: '8', ref: '1009510', qty: 1, name: 'Boulon hex. int. M8 x 20', note: '' },
+      { pos: '9', ref: '1009511', qty: 1, name: 'Rondelle', note: '' },
+      { pos: '10', ref: '1009512', qty: 1, name: 'Rondelle à ressort', note: '' },
+      { pos: '11', ref: '1009513', qty: 1, name: 'Engrenage', note: '' },
+      { pos: '12', ref: '1009514', qty: 1, name: 'Jonc d\'arrêt 65 mm', note: '' },
+      { pos: '13', ref: '1009515', qty: 1, name: 'Roulement', note: '' },
+      { pos: '14', ref: '1009516', qty: 1, name: 'Engrenage', note: '' },
+      { pos: '15', ref: '1009517', qty: 1, name: 'Clavette', note: '8 x 7 x 30' },
+      { pos: '16', ref: '1009518', qty: 1, name: 'Roulement 6305', note: '' },
+      { pos: '17', ref: '1009520', qty: 1, name: 'M8 x 16 mm', note: '' },
+      { pos: '18', ref: '1009521', qty: 1, name: 'Capot', note: '' },
+      { pos: '19', ref: '1009522', qty: 1, name: 'Regard de niveau', note: '1/2' },
+      { pos: '20', ref: '1009523', qty: 1, name: 'Engrenage', note: '' },
+      { pos: '21', ref: '1009524', qty: 1, name: 'Dispositif d\'étanchéité', note: '' },
+      { pos: '22', ref: '1009529', qty: 1, name: 'M12 x 35 hex. int.', note: '' },
+      { pos: '23', ref: '1007440', qty: 1, name: 'Moteur à huile', note: '' },
+      { pos: '24', ref: '1009215', qty: 1, name: 'Moyeu de l\'aimant', note: '' },
+      { pos: '25', ref: '1007571', qty: 4, name: 'Aimant', note: '' },
+      { pos: '26', ref: '1009216', qty: 1, name: 'Roulement de soutien', note: '' },
+      { pos: '32', ref: '1007443', qty: 1, name: 'Moteur à huile', note: '' },
+      { pos: '34', ref: '1013950', qty: 1, name: 'Collecteur de soupapes', note: '' },
+      { pos: '40', ref: '1010970', qty: 1, name: 'Filtre', note: '' },
+      { pos: '42', ref: '1007510', qty: 1, name: 'Robinet à boisseau sphérique', note: '' },
+      { pos: '44', ref: '761163-4', qty: 1, name: 'Manomètre', note: '' },
+    ]
+  },
+  {
+    id: 's14',
+    name: 'Système hydraulique',
+    pages: 'p. 80–83',
+    parts: [
+      { pos: '1', ref: '1010988', qty: 1, name: 'Tuyau 3/8 x 3600 mm', note: '' },
+      { pos: '2', ref: '1008612', qty: 1, name: 'Tuyau 3/8 x 600 mm', note: '' },
+      { pos: '3', ref: '1008601', qty: 2, name: 'Tuyau 3/8 x 1600 mm', note: '' },
+      { pos: '4', ref: '1008614', qty: 1, name: 'Tuyau 3/8 x 4900 mm', note: '' },
+      { pos: '5', ref: '1008609', qty: 1, name: 'Tuyau 3/8 x 1200 mm', note: '' },
+      { pos: '6', ref: '1010981', qty: 1, name: 'Tuyau 1/4 x 1230 mm', note: '' },
+      // Side 2-2
+      { pos: '1', ref: '1008601', qty: 3, name: 'Tuyau 3/8 x 1600 mm', note: '' },
+      { pos: '2', ref: '1008605', qty: 1, name: 'Tuyau 1/2 x 750 mm', note: '' },
+      { pos: '3', ref: '1008600', qty: 3, name: 'Tuyau 3/8 x 1050 mm', note: '' },
+      { pos: '4', ref: '1013829', qty: 2, name: 'Tuyau 3/8 x 8900 mm', note: '' },
+      { pos: '5', ref: '1007724', qty: 4, name: 'Mamelon droit 3/8 x Ø 12', note: '' },
+      { pos: '6', ref: '1007531', qty: 4, name: 'Té Ø 12', note: '' },
+      { pos: '7', ref: '1007499', qty: 4, name: 'Mamelon de vis de purge', note: '' },
+      { pos: '8', ref: '1007505', qty: 4, name: 'Dérivation 12 mm', note: '' },
+      { pos: '9', ref: '1007501', qty: 4, name: 'Vis de purge', note: '' },
+      { pos: '10', ref: '1007502', qty: 4, name: 'Chapeau de vis de purge', note: '' },
+    ]
+  },
+  {
+    id: 's15',
+    name: 'Frein hydraulique',
+    pages: 'p. 84–85',
+    parts: [
+      { pos: '1', ref: '1013825', qty: 3, name: 'Mamelon', note: '' },
+      { pos: '2', ref: '552026', qty: 3, name: 'Bague d\'étanchéité 1/4', note: '' },
+      { pos: '3', ref: '1013814', qty: 2, name: 'Té 1/4 x 1/4 x 1/4 int.', note: '' },
+      { pos: '4', ref: '1010976', qty: 3, name: 'Mamelon droit 1/4', note: '' },
+      { pos: '5', ref: '1007531', qty: 2, name: 'Té Ø 12 dériv. fixe X Ø 12 x Ø 12', note: '' },
+      { pos: '6', ref: '1010979', qty: 1, name: 'Mamelon droit pour manomètre', note: '' },
+      { pos: '7', ref: '761163-4', qty: 1, name: 'Manomètre', note: '' },
+      { pos: '8', ref: '1008622', qty: 1, name: 'Angle orientable Ø 12', note: '' },
+      { pos: '9', ref: '1007724', qty: 3, name: 'Mamelon droit 3/8', note: '' },
+      { pos: '10', ref: '1013835', qty: 1, name: 'Valve de freinage', note: '' },
+      { pos: '11', ref: '1010978', qty: 2, name: 'Mamelon droit 1/4 x Ø 12', note: '' },
+      { pos: '12', ref: '890414', qty: 1, name: 'Mamelon droit 3/8 x 12 dériv. fixe', note: '' },
+      { pos: '13', ref: '1210C055CA07', qty: 1, name: 'Clapet anti-retour', note: '' },
+      { pos: '14', ref: '1008610', qty: 1, name: 'Tuyau 3/8 x 400 mm', note: '' },
+      { pos: '15', ref: '1013817', qty: 1, name: 'Raccord de frein hyd. 1/2 filetage int.', note: '' },
+      { pos: '16', ref: '2004448', qty: 1, name: 'Bloc d\'assemblage', note: '' },
+      { pos: '17', ref: '1007514', qty: 10, name: 'Porte-tuyau', note: '' },
+      { pos: '18', ref: '1013837', qty: 1, name: 'Accumulateur pour frein', note: '' },
+      { pos: '19', ref: '1013845', qty: 2, name: 'Raccord fileté coudé', note: '' },
+      { pos: '20', ref: '1013843', qty: 1, name: 'Tuyau de frein 3/16 x 500 mm', note: '' },
+      { pos: '21', ref: '1013842', qty: 1, name: 'Tuyau de frein 3/16 x 650 mm', note: '' },
+    ]
+  },
+  {
+    id: 's16',
+    name: 'Montage de la turbine',
+    pages: 'p. 86–87',
+    parts: [
+      { pos: '1', ref: '1013025', qty: 1, name: 'Tuyau de canon', note: '' },
+      { pos: '2', ref: '1009120', qty: 1, name: 'Suspension de la turbine', note: '' },
+      { pos: '3', ref: '040412', qty: 8, name: 'Écrou en acier M12', note: 'B3 et B2' },
+      { pos: '4', ref: '763912', qty: 16, name: 'Ripp Lock M12', note: 'B3 et B2' },
+      { pos: '5', ref: '022212035', qty: 8, name: 'Boulon de fixation M12 x 35', note: 'B3 et B2' },
+      { pos: '6', ref: '16200730', qty: 2, name: 'Collier de serrage', note: '' },
+      { pos: '7', ref: '16050215', qty: 1, name: 'Tuyau Ø 90 x 720 mm', note: '' },
+      { pos: '8', ref: '761614', qty: 1, name: 'Joint d\'étanchéité', note: '' },
+      { pos: '9', ref: '770145', qty: 1, name: 'Canon', note: '' },
+      { pos: '10', ref: '7712781', qty: 1, name: '150Tr Corps plastique', note: '' },
+      { pos: '11', ref: '7712785', qty: 1, name: 'Joint torique', note: '' },
+      { pos: '12', ref: '7712467', qty: 1, name: '150Tr Bouchon plastique', note: '' },
+      { pos: '13', ref: '7712468-018', qty: 1, name: 'Buse en plastique 18 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-019', qty: 1, name: 'Buse en plastique 19 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-020', qty: 1, name: 'Buse en plastique 20 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-021', qty: 1, name: 'Buse en plastique 21 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-022', qty: 1, name: 'Buse en plastique 22 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-023', qty: 1, name: 'Buse en plastique 23 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-024', qty: 1, name: 'Buse en plastique 24 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-025', qty: 1, name: 'Buse en plastique 25 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-026', qty: 1, name: 'Buse en plastique 26 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-027', qty: 1, name: 'Buse en plastique 27 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-028', qty: 1, name: 'Buse en plastique 28 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-029', qty: 1, name: 'Buse en plastique 29 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-030', qty: 1, name: 'Buse en plastique 30 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-031', qty: 1, name: 'Buse en plastique 31 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-032', qty: 1, name: 'Buse en plastique 32 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-033', qty: 1, name: 'Buse en plastique 33 mm 150 tr', note: '' },
+      { pos: '13', ref: '7712468-034', qty: 1, name: 'Buse en plastique 34 mm 150 tr', note: '' },
+      { pos: '14', ref: '7712701', qty: 1, name: 'Buse complète', note: '' },
+    ]
+  },
+  {
+    id: 's17',
+    name: 'Canon Nelson SR 150',
+    pages: 'p. 88–91',
+    parts: [
+      { pos: '1', ref: '022208025', qty: 1, name: 'Boulon', note: '' },
+      { pos: '2', ref: '761614', qty: 1, name: 'Joint de bride du canon', note: '' },
+      { pos: '3', ref: '778402', qty: 1, name: 'Écrou de blocage', note: '' },
+      { pos: '4', ref: '776548', qty: 1, name: 'Joint torique', note: '' },
+      { pos: '5', ref: '778475', qty: 1, name: 'Joint torique', note: '' },
+      { pos: '6', ref: '778462', qty: 3, name: 'Boulon', note: '' },
+      { pos: '7', ref: '778401', qty: 1, name: 'Fond', note: '' },
+      { pos: '8', ref: '778461', qty: 2, name: 'Dispositif d\'étanchéité', note: '' },
+      { pos: '9', ref: '778373', qty: 1, name: 'Bague d\'étanchéité', note: '' },
+      { pos: '10', ref: '776253', qty: 2, name: 'Palier à roulement', note: '' },
+      { pos: '11', ref: '778405', qty: 1, name: 'Logement de palier', note: '' },
+      { pos: '12', ref: '778372', qty: 1, name: 'Bague d\'étanchéité', note: '' },
+      { pos: '13', ref: '778400', qty: 1, name: 'Disque de frein', note: '' },
+      { pos: '14', ref: '778371', qty: 1, name: 'Garniture de frein', note: '' },
+      { pos: '15', ref: '778459', qty: 1, name: 'Tube', note: '' },
+      { pos: '16', ref: '778474', qty: 12, name: 'Ressort', note: '' },
+      { pos: '17', ref: '778473', qty: 1, name: 'Bague d\'étanchéité', note: '' },
+      { pos: '19', ref: '776371', qty: 2, name: 'Support', note: '' },
+      { pos: '20', ref: '778432', qty: 1, name: 'Cale gauche', note: '' },
+      { pos: '21', ref: '778431', qty: 1, name: 'Cale droite', note: '' },
+      { pos: '22', ref: '776565', qty: 3, name: 'Jonc d\'arrêt', note: '' },
+      { pos: '23', ref: '776602', qty: 2, name: 'Capot de fond', note: '' },
+      { pos: '24', ref: '776563', qty: 2, name: 'Joint torique', note: '' },
+      { pos: '25', ref: '776603', qty: 2, name: 'Écrou', note: '' },
+      { pos: '26', ref: '776598', qty: 3, name: 'Palier à roulement', note: '' },
+      { pos: '29', ref: '778465', qty: 1, name: 'Axe', note: '' },
+      { pos: '32', ref: '778354', qty: 1, name: 'Pale d\'entraînement', note: '' },
+      { pos: '34', ref: '778364', qty: 1, name: 'Bras d\'entraînement', note: '' },
+      { pos: '35', ref: '778139', qty: 2, name: 'Butée en caoutchouc', note: '' },
+      { pos: '38', ref: '778433', qty: 1, name: 'Poids', note: '' },
+      { pos: '39', ref: '778366', qty: 1, name: 'Contrepoids', note: '' },
+      { pos: '40', ref: '778233', qty: 1, name: 'Capot', note: '' },
+      { pos: '47', ref: '778394', qty: 1, name: 'Levier de commande', note: '' },
+      { pos: '54', ref: '778446', qty: 1, name: 'Conduite', note: '' },
+      { pos: '55', ref: '778470', qty: 1, name: 'Ressort', note: '' },
+      { pos: '66', ref: '778193', qty: 1, name: 'Pointe', note: '' },
+      { pos: '78', ref: '778410', qty: 1, name: 'Levier de déclenchement', note: '' },
+      { pos: '79', ref: '778451', qty: 1, name: 'Levier de commande complet', note: '' },
+      { pos: '81', ref: '778460', qty: 1, name: 'Dispositif d\'étanchéité', note: '' },
+      { pos: '82', ref: '778587', qty: 1, name: 'Lance de projection', note: '' },
+    ]
+  },
+  {
+    id: 's18',
+    name: 'Attelage A',
+    pages: 'p. 92–93',
+    parts: [
+      { pos: '1', ref: '1008280-4', qty: 1, name: 'Cadre-A Hydraulique Catégorie 3', note: '' },
+      { pos: '1', ref: '1008280-3', qty: 1, name: 'Cadre-A Hydraulique Catégorie 2', note: '' },
+      { pos: '2', ref: '1008280-5', qty: 1, name: 'Cadre-A Câble Catégorie 2', note: '' },
+      { pos: '2', ref: '1008280-6', qty: 1, name: 'Cadre-A Câble Catégorie 3', note: '' },
+      { pos: '3', ref: '2013387', qty: 1, name: 'Cadre-A Catégorie 3', note: '' },
+      { pos: '3', ref: '2014300', qty: 1, name: 'Cadre-A Catégorie 2', note: '' },
+      { pos: '5', ref: '1008288', qty: 1, name: 'Tuyau hydraulique pour attelage-A', note: '' },
+      { pos: '8', ref: '1008287', qty: 1, name: 'Cylindre pour attelage-A', note: '' },
+      { pos: '13', ref: '1008285', qty: 1, name: 'Plaque perforée pour circuit hydraulique', note: '' },
+      { pos: '14', ref: '761274', qty: 1, name: 'Ressort', note: '' },
+      { pos: '15', ref: '1008283', qty: 1, name: 'Broche d\'attelage Cadre-A', note: '' },
+      { pos: '17', ref: '1008292', qty: 1, name: 'Câble en nylon pour cadre-A', note: '' },
+      { pos: '18', ref: '1008284', qty: 1, name: 'Bras pour broche d\'attelage', note: '' },
+      { pos: '19', ref: '1008282', qty: 1, name: 'Broche d\'attelage pour cadre-A', note: '' },
+      { pos: '21', ref: '1008290', qty: 1, name: 'Ressort de pression pour cadre-A', note: '' },
+    ]
+  },
+];
+
+// ============================================================
+// APP STATE
+// ============================================================
+let machines = [
+  {
+    id: 'fm5500h',
+    name: 'FM5500H',
+    brand: 'Fasterholt',
+    year: '2024',
+    sections: FM5500H_SECTIONS
+  }
+];
+
+let currentMachineId = null;
+let currentSectionId = null;
+let searchQuery = '';
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  currentMachineId = null;
+  currentSectionId = null;
+  searchQuery = '';
+  renderHome();
+  showScreen('home');
+}
+
+function goMachine() {
+  currentSectionId = null;
+  renderMachine(currentMachineId);
+  showScreen('machine');
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome() {
+  const list = document.getElementById('machines-list');
+  let html = '';
+  machines.forEach(m => {
+    const totalParts = m.sections.reduce((acc, s) => acc + s.parts.length, 0);
+    html += `
+      <div class="machine-card" onclick="openMachine('${m.id}')">
+        <div class="machine-card-header">
+          <div>
+            <div class="machine-name">${m.name}</div>
+            <div class="machine-brand">${m.brand}</div>
+          </div>
+          <div class="machine-arrow">›</div>
+        </div>
+        <div class="machine-stats">
+          <div class="machine-stat"><strong>${m.sections.length}</strong> sous-ensembles</div>
+          <div class="machine-stat"><strong>${totalParts}</strong> pièces</div>
+        </div>
+      </div>`;
+  });
+  html += `<button class="add-machine-btn" onclick="openAddModal()"><span style="font-size:18px">+</span> Ajouter une machine</button>`;
+  list.innerHTML = html;
+}
+
+function openMachine(id) {
+  currentMachineId = id;
+  renderMachine(id);
+  showScreen('machine');
+}
+
+// ============================================================
+// MACHINE DETAIL
+// ============================================================
+function renderMachine(id) {
+  const machine = machines.find(m => m.id === id);
+  if (!machine) return;
+  document.getElementById('machine-title').textContent = machine.name;
+  document.getElementById('machine-sub').textContent = machine.brand + ' · ' + machine.sections.length + ' sous-ensembles';
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
+  renderSections(machine);
+}
+
+function filterSections() {
+  const machine = machines.find(m => m.id === currentMachineId);
+  if (!machine) return;
+  searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+  renderSections(machine);
+}
+
+function renderSections(machine) {
+  const q = searchQuery;
+  const list = document.getElementById('sections-list');
+  let html = '';
+  let anyResult = false;
+
+  machine.sections.forEach(sec => {
+    let matchingParts = [];
+    if (q) {
+      matchingParts = sec.parts.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.ref.toLowerCase().includes(q) ||
+        p.pos.toLowerCase().includes(q)
+      );
+      const sectionMatch = sec.name.toLowerCase().includes(q);
+      if (!sectionMatch && matchingParts.length === 0) return;
+    }
+    anyResult = true;
+    const count = q ? matchingParts.length + ' rés.' : sec.parts.length + ' pièces';
+    const nameDisplay = q ? highlight(sec.name, q) : sec.name;
+
+    html += `
+      <div class="section-card" onclick="openSection('${sec.id}')">
+        <div class="section-card-header">
+          <span class="section-num">${sec.pages}</span>
+          <span class="section-name">${nameDisplay}</span>
+          <span class="section-count">${count}</span>
+          <span class="section-chevron">›</span>
+        </div>
+        ${q && matchingParts.length > 0 ? renderMatchPreview(matchingParts, q) : ''}
+      </div>`;
+  });
+
+  if (!anyResult) {
+    html = `<div class="no-results">Aucun résultat pour « ${q} »</div>`;
+  }
+  list.innerHTML = html;
+}
+
+function renderMatchPreview(parts, q) {
+  const shown = parts.slice(0, 3);
+  let html = '<div style="padding: 0 14px 10px; border-top: 1px solid rgba(46,46,46,0.5);">';
+  shown.forEach(p => {
+    html += `<div style="padding: 4px 0; font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:baseline;">
+      <span style="font-family:var(--mono);color:var(--accent);font-size:10px;min-width:24px;">N°${p.pos}</span>
+      <span>${highlight(p.name, q)}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--accent2);margin-left:auto;">${highlight(p.ref, q)}</span>
+    </div>`;
+  });
+  if (parts.length > 3) {
+    html += `<div style="font-size:11px;color:var(--muted);padding-top:2px;">+ ${parts.length - 3} autres…</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return text;
+  return text.slice(0, idx) + '<mark class="highlight">' + text.slice(idx, idx + q.length) + '</mark>' + text.slice(idx + q.length);
+}
+
+// ============================================================
+// SECTION DETAIL
+// ============================================================
+function openSection(secId) {
+  const machine = machines.find(m => m.id === currentMachineId);
+  if (!machine) return;
+  const sec = machine.sections.find(s => s.id === secId);
+  if (!sec) return;
+  currentSectionId = secId;
+
+  document.getElementById('section-title').textContent = sec.name;
+  document.getElementById('section-pages').textContent = 'Plans : ' + sec.pages;
+
+  const q = searchQuery;
+
+  let html = `
+    <div class="info-banner">
+      <span>ℹ</span>
+      <span>Pour zoomer sur un plan, utilisez le pinch (écartement des doigts) directement sur le schéma ci-dessus dans le PDF d'origine.</span>
+    </div>
+    <div class="plan-placeholder">
+      <div class="plan-icon">📐</div>
+      <div>Plan éclaté — ${sec.name}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px;">${sec.pages}</div>
+    </div>
+    <div class="parts-table-wrap">
+      <div class="parts-table-title">LISTE DES PIÈCES DÉTACHÉES</div>
+      <table class="parts-table">
+        <thead><tr>
+          <th>N°</th>
+          <th>Référence</th>
+          <th>Qté</th>
+          <th>Désignation</th>
+        </tr></thead>
+        <tbody>`;
+
+  const parts = q
+    ? sec.parts.filter(p => p.name.toLowerCase().includes(q) || p.ref.toLowerCase().includes(q) || p.pos.toLowerCase().includes(q))
+    : sec.parts;
+
+  parts.forEach(p => {
+    html += `<tr>
+      <td class="part-pos">${p.pos}</td>
+      <td class="part-ref">${highlight(p.ref, q)}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:11px;">${p.qty}</td>
+      <td>
+        <div>${highlight(p.name, q)}</div>
+        ${p.note ? `<div class="part-note">${p.note}</div>` : ''}
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  document.getElementById('section-detail-content').innerHTML = html;
+  showScreen('section');
+}
+
+// ============================================================
+// ADD MACHINE MODAL
+// ============================================================
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('new-machine-name').focus(), 100);
+}
+
+function closeAddModal(e) {
+  if (!e || e.target === document.getElementById('add-modal')) {
+    document.getElementById('add-modal').classList.remove('open');
+    document.getElementById('new-machine-name').value = '';
+    document.getElementById('new-machine-brand').value = '';
+  }
+}
+
+function addMachine() {
+  const name = document.getElementById('new-machine-name').value.trim();
+  const brand = document.getElementById('new-machine-brand').value.trim();
+  if (!name) { document.getElementById('new-machine-name').focus(); return; }
+
+  const id = 'machine_' + Date.now();
+  machines.push({
+    id,
+    name,
+    brand: brand || 'Fabricant inconnu',
+    sections: []
+  });
+
+  closeAddModal();
+  renderHome();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderHome();
+</script>
+</body>
+</html>
